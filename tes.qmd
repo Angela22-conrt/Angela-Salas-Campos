@@ -1,0 +1,43 @@
+---
+title: "analisis estadistico"
+author: "Angela"
+format: html
+---
+
+#Paquetes
+
+```{r}
+library(googlesheets4)
+library(tidyverse)
+```
+
+Ya cargue los paquetes requeridos
+
+#Importar datos
+
+Importar de googlesheets al RStudio
+
+```{r}
+url <- "https://docs.google.com/spreadsheets/d/1HT69PUpZnuimtCNySb5VW99BC5FB4Hgv/edit?gid=1298112693#gid=1298112693"
+
+gs <- url %>% 
+  as_sheets_id()
+
+fb <- gs %>% 
+  range_read(sheet = "fb")
+
+#Modelo estadistico
+modelo= brix ~ + temperatura + tiempo + temperatura*tiempo +ε
+```
+#Anova
+```{r}
+modelo <- aov(brix ~ temperatura * tiempo, data = Datos)
+modelo <- aov(ph ~ temperatura * tiempo, data = Datos)
+modelo <- aov(den ~ temperatura * tiempo, data = Datos)
+modelo <- aov(alco ~ temperatura * tiempo, data = Datos)
+modelo <- aov(acidez ~ temperatura * tiempo, data = Datos)
+
+plot(modelo)
+```
+
+

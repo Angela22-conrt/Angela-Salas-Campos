@@ -85,7 +85,8 @@ library(FactoMineR)
 mv <- rs %>% 
   PCA(scale.unit = T, quali.sup = c(1, 2))
 ```
-save.image("mi_entorno_completo.RData")
+
+
 
 
 

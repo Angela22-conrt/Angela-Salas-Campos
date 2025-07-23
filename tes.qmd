@@ -9,6 +9,7 @@ format: html
 ```{r}
 library(googlesheets4)
 library(tidyverse)
+library(emmeans)
 ```
 
 Ya cargue los paquetes requeridos
@@ -18,7 +19,7 @@ Ya cargue los paquetes requeridos
 Importar de googlesheets al RStudio
 
 ```{r}
-url <- "https://docs.google.com/spreadsheets/d/1HT69PUpZnuimtCNySb5VW99BC5FB4Hgv/edit?gid=1298112693#gid=1298112693"
+url <- "https://docs.google.com/spreadsheets/d/1g8HyK-XSCxkBxAOoZETsHZUdHtwCoSe9DvgDDqKLpKw/edit?gid=1298112693#gid=1298112693"
 
 gs <- url %>% 
   as_sheets_id()
@@ -31,13 +32,65 @@ modelo= brix ~ + temperatura + tiempo + temperatura*tiempo +ε
 ```
 #Anova
 ```{r}
-modelo <- aov(brix ~ temperatura * tiempo, data = Datos)
-modelo <- aov(ph ~ temperatura * tiempo, data = Datos)
-modelo <- aov(den ~ temperatura * tiempo, data = Datos)
-modelo <- aov(alco ~ temperatura * tiempo, data = Datos)
-modelo <- aov(acidez ~ temperatura * tiempo, data = Datos)
-
+modelo <- aov(brix ~ temperatura * tiempo, data = fb)
+modelo <- aov(ph ~ temperatura * tiempo, data = fb)
+modelo <- aov(den ~ temperatura * tiempo, data = fb)
+modelo <- aov(alco ~ temperatura * tiempo, data = fb)
+modelo <- aov(acidez ~ temperatura * tiempo, data = fb)
+anova(modelo)
 plot(modelo)
 ```
+
+#Comparacion de medias 
+```{r}
+library(emmeans)
+library(multcomp)
+
+emm <- emmeans(modelo,~ temperatura / tiempo)
+summary(emm)
+cm <- cld(emm, alpha = 0.05, Letters = letters, adjust = "tukey")
+
+cm
+```
+## Grafico
+
+```{r}
+library(ggplot2)
+
+ggplot(cm, aes(x = tiempo, y = emmean, color = temperatura, group = temperatura)) +
+  geom_line() +
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE), width = 0.2) +
+  theme_minimal()
+```
+```{r}
+library(ggplot2)
+
+ggplot(cm, aes(x = tiempo, y = emmean, fill = temperatura)) + 
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) + 
+  geom_errorbar(aes(ymin = emmean - SE, ymax = emmean + SE), 
+                position = position_dodge(width = 0.8), width = 0.2) +
+  theme_minimal()
+
+```
+
+
+# PCA
+```{r}
+rs <- fb %>%
+  group_by(tiempo, temperatura) %>%
+  summarise(across(where(is.numeric), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+
+library(FactoMineR)
+
+mv <- rs %>% 
+  PCA(scale.unit = T, quali.sup = c(1, 2))
+```
+
+
+
+
+
+
+
 
 
